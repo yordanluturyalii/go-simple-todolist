@@ -47,7 +47,6 @@ jobs:
       - name: Deploy To Ec2
         run: |
           echo "$PRIVATE_KEY" > secret-ec2.pem && chmod 600 secret-ec2.pem
-          scp -o StrictHostKeyChecking=no -i secret-ec2.pem .env ${USER}@${HOST}
           ssh -o StrictHostKeyChecking=no -i secret-ec2.pem ${USER}@${HOST} '
           echo "Current directory: $(pwd)"
           echo "Listing home directory:"
@@ -55,7 +54,7 @@ jobs:
           
           echo "Current directory: $(pwd)"
           
-          echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
+          echo "${{ secrets.ENV_FILE_CONTENT }}" > ~/.env
           
           sudo docker compose down -v
           
@@ -63,5 +62,3 @@ jobs:
           
           sudo docker compose up -d 
           '
-          
-        
