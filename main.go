@@ -30,7 +30,7 @@ func main() {
 	router := app.NewRouter(todolistController)
 
 	server := http.Server{
-		Addr:    ":8080",
+		Addr:    "localhost:8080",
 		Handler: router,
 	}
 	err := server.ListenAndServe()
