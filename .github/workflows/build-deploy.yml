@@ -39,6 +39,7 @@ jobs:
       PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
       HOST: ${{ secrets.EC2_HOST }}
       USER: ${{ secrets.EC2_USER }}
+      ENV: ${{ secrets.ENV_FILE_CONTENT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,13 +47,15 @@ jobs:
       - name: Deploy To Ec2
         run: |
           echo "$PRIVATE_KEY" > secret-ec2.pem && chmod 600 secret-ec2.pem
-          scp -o StrictHostKeyChecking=no -i secret-ec2.pem .env ${USER}@${HOST}:/home/ubuntu
+          scp -o StrictHostKeyChecking=no -i secret-ec2.pem .env ${USER}@${HOST}
           ssh -o StrictHostKeyChecking=no -i secret-ec2.pem ${USER}@${HOST} '
           echo "Current directory: $(pwd)"
           echo "Listing home directory:"
           ls -la ~
           
           echo "Current directory: $(pwd)"
+          
+          echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
           
           sudo docker compose down -v
           
