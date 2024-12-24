@@ -8,7 +8,8 @@ import (
 func NewRouter(todolistController controller.TodolistController) *httprouter.Router {
 	router := httprouter.New()
 
-	router.GET("/", todolistController.FindAll)
+	router.GET("/api", todolistController.FindAll)
+	router.GET("/api/:id", todolistController.FindById)
 
 	return router
 }

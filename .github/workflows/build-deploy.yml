@@ -1,0 +1,64 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - staging
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create .env File
+        run: echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
+
+      - name: Connect to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Set up Docker BuildX
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/todo-app:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    needs: build
+    env:
+      PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+      HOST: ${{ secrets.EC2_HOST }}
+      USER: ${{ secrets.EC2_USER }}
+      ENV: ${{ secrets.ENV_FILE_CONTENT }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy To Ec2
+        run: |
+          echo "$PRIVATE_KEY" > secret-ec2.pem && chmod 600 secret-ec2.pem
+          ssh -o StrictHostKeyChecking=no -i secret-ec2.pem ${USER}@${HOST} '
+          echo "Current directory: $(pwd)"
+          echo "Listing home directory:"
+          ls -la ~
+          
+          echo "Current directory: $(pwd)"
+          
+          echo "${{ secrets.ENV_FILE_CONTENT }}" > ~/.env
+          
+          sudo docker compose down -v
+          
+          sudo docker compose pull 
+          
+          sudo docker compose up -d 
+          '
