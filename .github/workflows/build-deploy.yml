@@ -34,6 +34,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: staging
+    needs: build
     env:
       PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
       HOST: ${{ secrets.EC2_HOST }}
@@ -44,5 +45,18 @@ jobs:
 
       - name: Deploy To Ec2
         run: |
-          echo $"PRIVATE_KEY"
+          echo "$PRIVATE_KEY" > secret-ec2.pem && chmod 400 secret-ec2.pem
+          ssh -o StrictHostKeyChecking=no -i secret-ec2.pem ${USER}@${HOST} '
+          echo "Current directory: $(pwd)"
+          echo "Listing home directory:"
+          ls -la ~
+          
+          echo "Current directory: $(pwd)"
+          
+          sudo docker compose down -v
+          
+          sudo docker compose pull 
+          
+          sudo docker compose up -d 
+          '
         
