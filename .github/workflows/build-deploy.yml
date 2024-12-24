@@ -45,7 +45,7 @@ jobs:
       - name: Deploy To Ec2
         run: |
           echo $"PRIVATE_KEY" > secret-ec2.pem && chmod 400 secret-ec2.pem
-          ssh -o StrictHostKeyChecking=no -i github-ec2.pem ${USER}@${HOST} '
+          ssh -o StrictHostKeyChecking=no -i secret-ec2.pem ${USER}@${HOST} '
           echo "Current directory: $(pwd)"
           echo "Listing home directory:"
           ls -la ~
